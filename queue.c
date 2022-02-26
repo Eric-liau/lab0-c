@@ -149,7 +149,29 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
  */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (!head)
+        return NULL;
+    if (list_empty(head))
+        return NULL;
+
+
+    element_t *node = list_entry(head->prev, element_t, list);
+
+    if (!sp) {
+        list_del_init(head->prev);
+        return node;
+    }
+    char *str = node->value;
+    int len = strlen(str) + 1;
+    if (len <= bufsize)
+        strncpy(sp, str, len);
+    else {
+        strncpy(sp, str, bufsize - 1);
+        *(sp + bufsize - 1) = '\0';
+    }
+
+    list_del_init(head->prev);
+    return node;
 }
 
 /*
