@@ -11,6 +11,8 @@
  *   cppcheck-suppress nullPointer
  */
 
+
+
 /*
  * Create empty queue.
  * Return NULL if could not allocate space.
@@ -116,7 +118,29 @@ bool q_insert_tail(struct list_head *head, char *s)
  */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (!head)
+        return NULL;
+    if (list_empty(head))
+        return NULL;
+
+
+    element_t *node = list_entry(head->next, element_t, list);
+
+    if (!sp) {
+        list_del_init(head->next);
+        return node;
+    }
+    char *str = node->value;
+    int len = strlen(str) + 1;
+    if (len <= bufsize)
+        strncpy(sp, str, len);
+    else {
+        strncpy(sp, str, bufsize - 1);
+        *(sp + bufsize - 1) = '\0';
+    }
+
+    list_del_init(head->next);
+    return node;
 }
 
 /*
