@@ -317,7 +317,17 @@ void q_sort(struct list_head *head)
     INIT_LIST_HEAD(&less);
     INIT_LIST_HEAD(&greater);
 
-    element_t *pivot = list_first_entry(head, element_t, list);
+    element_t *pivot;
+    element_t *first = list_first_entry(head, element_t, list);
+    element_t *last = list_last_entry(head, element_t, list);
+    element_t *mid = list_entry(find_mid(head), element_t, list);
+    if (strcmp(first, last) > 0 && strcmp(first, mid) < 0)
+        pivot = first;
+    else if (strcmp(last, first) > 0 && strcmp(last, mid) < 0)
+        pivot = last;
+    else
+        pivot = mid;
+
     list_del(&pivot->list);
     element_t *current = NULL, *save = NULL;
     list_for_each_entry_safe (current, save, head, list) {
