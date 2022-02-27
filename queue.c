@@ -321,9 +321,11 @@ void q_sort(struct list_head *head)
     element_t *first = list_first_entry(head, element_t, list);
     element_t *last = list_last_entry(head, element_t, list);
     element_t *mid = list_entry(find_mid(head), element_t, list);
-    if (strcmp(first, last) > 0 && strcmp(first, mid) < 0)
+    if (strcmp(first->value, last->value) > 0 &&
+        strcmp(first->value, mid->value) < 0)
         pivot = first;
-    else if (strcmp(last, first) > 0 && strcmp(last, mid) < 0)
+    else if (strcmp(last->value, first->value) > 0 &&
+             strcmp(last->value, mid->value) < 0)
         pivot = last;
     else
         pivot = mid;
