@@ -317,6 +317,9 @@ void q_swap(struct list_head *head)
  */
 void q_reverse(struct list_head *head)
 {
+    if (!head)
+        return;
+
     struct list_head *current, *safe;
     list_for_each_safe (current, safe, head) {
         struct list_head *prev = current->prev;
