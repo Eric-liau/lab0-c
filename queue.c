@@ -289,6 +289,9 @@ bool q_delete_dup(struct list_head *head)
  */
 void q_swap(struct list_head *head)
 {
+    if (!head)
+        return;
+
     for (struct list_head *first = head->next, *second = head->next->next;
          first != head && second != head;
          first = first->next, second = first->next) {
