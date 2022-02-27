@@ -339,43 +339,41 @@ void q_reverse(struct list_head *head)
  * element, do nothing.
  */
 
+struct list_head *merge(struct list_head *left, struct list_head *right)
+{
+    struct list_head head, **temp, *l = left->next, *r = right->next;
+    INIT_LIST_HEAD(&head);
+    while (l != left && r != right) {
+        if (strcmp(list_entry(l, element_t, list)->value,
+                   list_entry(r, element_t, list)->value) < 0)
+            temp = &l;
+        else
+            temp = &r;
+        *temp = (*temp)->next;
+        list_move_tail((*temp)->prev, &head);
+    }
+    (l == left) ? list_splice_tail_init(right, &head)
+                : list_splice_tail(left, &head);
+
+    list_splice_tail(&head, right);
+
+    return right;
+}
 
 void q_sort(struct list_head *head)
 {
     if (!head || list_empty(head) || list_is_singular(head))
         return;
 
-    struct list_head less, greater;
-    INIT_LIST_HEAD(&less);
-    INIT_LIST_HEAD(&greater);
+    struct list_head *mid = find_mid(head);
+    struct list_head new_head;
+    INIT_LIST_HEAD(&new_head);
 
-    element_t *pivot;
-    element_t *first = list_first_entry(head, element_t, list);
-    element_t *last = list_last_entry(head, element_t, list);
-    element_t *mid = list_entry(find_mid(head), element_t, list);
-    if (strcmp(first->value, last->value) > 0 &&
-        strcmp(first->value, mid->value) < 0)
-        pivot = first;
-    else if (strcmp(last->value, first->value) > 0 &&
-             strcmp(last->value, mid->value) < 0)
-        pivot = last;
-    else
-        pivot = mid;
+    list_cut_position(&new_head, head, mid->prev);
+    q_sort(&new_head);
+    q_sort(head);
 
-    list_del(&pivot->list);
-    element_t *current = NULL, *save = NULL;
-    list_for_each_entry_safe (current, save, head, list) {
-        if (strcmp(pivot->value, current->value) < 0)
-            list_move(&current->list, &greater);
-        else
-            list_move(&current->list, &less);
-    }
+    merge(&new_head, head);
 
-    q_sort(&greater);
-    q_sort(&less);
-
-    list_splice(&less, head);
-    list_add_tail(&pivot->list, head);
-    list_splice_tail(&greater, head);
     return;
 }
