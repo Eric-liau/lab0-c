@@ -228,7 +228,7 @@ bool q_delete_mid(struct list_head *head)
     free(node->value);
     free(node);
 
-    // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+
     return true;
 }
 
@@ -243,7 +243,40 @@ bool q_delete_mid(struct list_head *head)
  */
 bool q_delete_dup(struct list_head *head)
 {
-    // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (!head)
+        return false;
+    if (list_empty(head))
+        return true;
+
+    element_t *current, *first = list_entry(head->next, element_t, list),
+                        *last = first;
+    list_for_each_entry (current, head, list) {
+        if (!strcmp(current->value, first->value))
+            last = current;
+        else {
+            if (first != last) {
+                first->list.prev->next = last->list.next;
+                last->list.next->prev = first->list.prev;
+                while (first != current) {
+                    element_t *temp =
+                        list_entry(first->list.next, element_t, list);
+                    q_release_element(first);
+                    first = temp;
+                }
+            }
+            first = current;
+            last = current;
+        }
+    }
+    if (first != last) {
+        first->list.prev->next = last->list.next;
+        last->list.next->prev = first->list.prev;
+        while (first != current) {
+            element_t *temp = list_entry(first->list.next, element_t, list);
+            q_release_element(first);
+            first = temp;
+        }
+    }
     return true;
 }
 
@@ -269,4 +302,32 @@ void q_reverse(struct list_head *head) {}
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  */
-void q_sort(struct list_head *head) {}
+
+
+void q_sort(struct list_head *head)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+
+    struct list_head less, greater;
+    INIT_LIST_HEAD(&less);
+    INIT_LIST_HEAD(&greater);
+
+    element_t *pivot = list_first_entry(head, element_t, list);
+    list_del(&pivot->list);
+    element_t *current = NULL, *save = NULL;
+    list_for_each_entry_safe (current, save, head, list) {
+        if (strcmp(pivot->value, current->value) < 0)
+            list_move(&current->list, &greater);
+        else
+            list_move(&current->list, &less);
+    }
+
+    q_sort(&greater);
+    q_sort(&less);
+
+    list_splice(&less, head);
+    list_add_tail(&pivot->list, head);
+    list_splice_tail(&greater, head);
+    return;
+}
