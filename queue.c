@@ -341,23 +341,50 @@ void q_reverse(struct list_head *head)
 
 struct list_head *merge(struct list_head *left, struct list_head *right)
 {
-    struct list_head head, **temp, *l = left->next, *r = right->next;
-    INIT_LIST_HEAD(&head);
-    while (l != left && r != right) {
-        if (strcmp(list_entry(l, element_t, list)->value,
-                   list_entry(r, element_t, list)->value) < 0)
-            temp = &l;
-        else
-            temp = &r;
-        *temp = (*temp)->next;
-        list_move_tail((*temp)->prev, &head);
+    struct list_head *head = NULL, **temp = &head;
+
+    while (left && right) {
+        if (strcmp(list_entry(left, element_t, list)->value,
+                   list_entry(right, element_t, list)->value) <= 0) {
+            *temp = left;
+            left = left->next;
+        } else {
+            *temp = right;
+            right = right->next;
+        }
+        temp = &(*temp)->next;
     }
-    (l == left) ? list_splice_tail_init(right, &head)
-                : list_splice_tail(left, &head);
+    *temp = left ? left : right;
 
-    list_splice_tail(&head, right);
 
-    return right;
+    return head;
+}
+
+
+
+struct list_head *merge_sort(struct list_head *head)
+{
+    if (!head)
+        return head;
+    if (!head->next)
+        return head;
+
+    struct list_head *fast = head, *slow = head;
+    while (1) {
+        if (!fast)
+            break;
+        if (!fast->next)
+            break;
+
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    slow->prev->next = NULL;
+
+    head = merge_sort(head);
+    slow = merge_sort(slow);
+
+    return merge(head, slow);
 }
 
 void q_sort(struct list_head *head)
@@ -365,15 +392,17 @@ void q_sort(struct list_head *head)
     if (!head || list_empty(head) || list_is_singular(head))
         return;
 
-    struct list_head *mid = find_mid(head);
-    struct list_head new_head;
-    INIT_LIST_HEAD(&new_head);
+    head->prev->next = NULL;
 
-    list_cut_position(&new_head, head, mid->prev);
-    q_sort(&new_head);
-    q_sort(head);
+    head->next = merge_sort(head->next);
 
-    merge(&new_head, head);
+    struct list_head *current, *prev;
+    for (current = head->next, prev = head; current;
+         current = current->next, prev = prev->next)
+        current->prev = prev;
+    prev->next = head;
+    head->prev = prev;
+
 
     return;
 }
