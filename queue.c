@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <math.h>
 #include "harness.h"
 #include "queue.h"
+
 
 /* Notice: sometimes, Cppcheck would find the potential NULL pointer bugs,
  * but some of them cannot occur. You can suppress them by adding the
@@ -387,7 +389,61 @@ struct list_head *merge_sort(struct list_head *head)
     return merge(head, slow);
 }
 
+
+void merge_sort_iter(struct list_head *head)
+{
+    int num = q_size(head);
+    num = log2(num) + 1;
+    int stack[num];
+    struct list_head *space[num];
+    head->prev->next = NULL;
+    head->prev = NULL;
+    struct list_head *node = head->next;
+
+    int i = 0;
+    while (node) {
+        space[i] = node;
+        stack[i] = 0;
+        struct list_head *tmp = node;
+        node = node->next;
+        tmp->next = NULL;
+        int j = i - 1;
+        while (j >= 0) {
+            if (stack[j] == stack[j + 1]) {
+                space[j] = merge(space[j], space[j + 1]);
+                stack[j]++;
+                j--;
+                i--;
+            } else
+                break;
+        }
+        i++;
+    }
+    i--;
+    while (i) {
+        space[i - 1] = merge(space[i - 1], space[i]);
+        i--;
+    }
+    head->next = space[0];
+    struct list_head *current, *prev;
+    for (current = head->next, prev = head; current;
+         current = current->next, prev = prev->next)
+        current->prev = prev;
+    prev->next = head;
+    head->prev = prev;
+
+    return;
+}
+
 void q_sort(struct list_head *head)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+    merge_sort_iter(head);
+    return;
+}
+
+/*void q_sort(struct list_head *head)
 {
     if (!head || list_empty(head) || list_is_singular(head))
         return;
@@ -405,4 +461,4 @@ void q_sort(struct list_head *head)
 
 
     return;
-}
+}*/
