@@ -7,6 +7,7 @@
 #include "queue.h"
 
 
+
 /* Notice: sometimes, Cppcheck would find the potential NULL pointer bugs,
  * but some of them cannot occur. You can suppress them by adding the
  * following line.
@@ -435,11 +436,14 @@ void merge_sort_iter(struct list_head *head)
     return;
 }
 
+
+
 void q_sort(struct list_head *head)
 {
     if (!head || list_empty(head) || list_is_singular(head))
         return;
     merge_sort_iter(head);
+
     return;
 }
 

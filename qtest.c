@@ -15,6 +15,8 @@
 #include "dudect/fixture.h"
 #include "list.h"
 
+#include "list_sort.c"
+
 /* Our program needs to use regular malloc/free */
 #define INTERNAL 1
 #include "harness.h"
@@ -68,6 +70,8 @@ static int fail_limit = BIG_LIST;
 static int fail_count = 0;
 
 static int string_length = MAXSTRING;
+
+static int listsort = 0;
 
 #define MIN_RANDSTR_LEN 5
 #define MAX_RANDSTR_LEN 10
@@ -713,8 +717,13 @@ bool do_sort(int argc, char *argv[])
     error_check();
 
     set_noallocate_mode(true);
-    if (exception_setup(true))
-        q_sort(l_meta.l);
+    if (exception_setup(true)) {
+        if (!listsort)
+            q_sort(l_meta.l);
+        else
+            list_sort(NULL, l_meta.l, listcmp);
+    }
+
     exception_cancel();
     set_noallocate_mode(false);
 
@@ -900,6 +909,7 @@ static void console_init()
               NULL);
     add_param("fail", &fail_limit,
               "Number of times allow queue operations to return false", NULL);
+    add_param("listsort", &listsort, "Use list_sort or not", NULL);
 }
 
 /* Signal handlers */
