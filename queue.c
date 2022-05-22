@@ -363,6 +363,35 @@ struct list_head *merge(struct list_head *left, struct list_head *right)
     return head;
 }
 
+void final_merge(struct list_head *left,
+                 struct list_head *right,
+                 struct list_head *head)
+{
+    struct list_head **temp = &head;
+
+    while (left && right) {
+        if (strcmp(list_entry(left, element_t, list)->value,
+                   list_entry(right, element_t, list)->value) <= 0) {
+            left->prev = *temp;
+            (*temp)->next = left;
+            left = left->next;
+        } else {
+            right->prev = *temp;
+            (*temp)->next = right;
+            right = right->next;
+        }
+        temp = &(*temp)->next;
+    }
+    (*temp)->next = left ? left : right;
+    while ((*temp)->next) {
+        (*temp)->next->prev = *temp;
+        temp = &(*temp)->next;
+    }
+    (*temp)->next = head;
+    head->prev = *temp;
+
+    return;
+}
 
 
 struct list_head *merge_sort(struct list_head *head)
@@ -390,8 +419,48 @@ struct list_head *merge_sort(struct list_head *head)
     return merge(head, slow);
 }
 
-
 void merge_sort_iter(struct list_head *head)
+{
+    struct list_head *pending = NULL;
+    struct list_head *list = head->next;
+    head->prev->next = NULL;
+    head->prev = NULL;
+    int count = 0;
+
+    while (list) {
+        list->prev = pending;
+        pending = list;
+        list = list->next;
+        pending->next = NULL;
+        struct list_head **tail = &pending;
+        for (int bits = count;; bits >>= 1) {
+            if (bits & 1) {
+                struct list_head *a = *tail, *b = a->prev;
+                a = merge(b, a);
+                a->prev = b->prev;
+                *tail = a;
+            } else
+                break;
+        }
+        count++;
+    }
+
+    list = pending;
+    pending = pending->prev;
+    while (pending) {
+        struct list_head *next = pending->prev;
+        if (!next)
+            break;
+        list = merge(pending, list);
+        pending = next;
+    }
+    final_merge(pending, list, head);
+
+
+    return;
+}
+
+/*void merge_sort_iter(struct list_head *head)
 {
     int num = q_size(head);
     num = log2(num) + 1;
@@ -434,7 +503,7 @@ void merge_sort_iter(struct list_head *head)
     head->prev = prev;
 
     return;
-}
+}*/
 
 
 
