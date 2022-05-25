@@ -870,6 +870,43 @@ static bool do_show(int argc, char *argv[])
     return show_queue(0);
 }
 
+static void shuffle(struct list_head *head)
+{
+    int num = q_size(head);
+
+    struct list_head *tmp, *current;
+    for (tmp = head->prev; num > 0; num--) {
+        current = head;
+        for (int i = rand() % num; i >= 0; i--)
+            current = current->next;
+        char *value = list_entry(current, element_t, list)->value;
+        list_entry(current, element_t, list)->value =
+            list_entry(tmp, element_t, list)->value;
+        list_entry(tmp, element_t, list)->value = value;
+    }
+}
+static bool do_shuffle(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+    if (!l_meta.l) {
+        report(1, "list is null");
+        return false;
+    } else if (list_empty(l_meta.l)) {
+        report(1, "list is empty");
+        return false;
+    } else if (list_is_singular(l_meta.l)) {
+        report(1, "no need to shuffle");
+        return false;
+    }
+
+    shuffle(l_meta.l);
+    show_queue(3);
+    return true;
+}
+
 static void console_init()
 {
     ADD_COMMAND(new, "                | Create new queue");
@@ -903,6 +940,7 @@ static void console_init()
         dedup, "                | Delete all nodes that have duplicate string");
     ADD_COMMAND(swap,
                 "                | Swap every two adjacent nodes in queue");
+    ADD_COMMAND(shuffle, "                | Shuffle the list");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
