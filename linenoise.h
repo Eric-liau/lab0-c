@@ -36,13 +36,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdbool.h>
 #include <stddef.h>
+#include "tiny.h"
 #ifndef __LINENOISE_H
 #define __LINENOISE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+bool noise;
+int listenfd;
+
+
 
 typedef struct linenoiseCompletions {
     size_t len;

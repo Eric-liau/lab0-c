@@ -16,6 +16,7 @@
 #include "list.h"
 
 #include "list_sort.c"
+#include "tiny.h"
 
 /* Our program needs to use regular malloc/free */
 #define INTERNAL 1
@@ -72,6 +73,9 @@ static int fail_count = 0;
 static int string_length = MAXSTRING;
 
 static int listsort = 0;
+bool noise = true;
+
+
 
 #define MIN_RANDSTR_LEN 5
 #define MAX_RANDSTR_LEN 10
@@ -907,6 +911,15 @@ static bool do_shuffle(int argc, char *argv[])
     return true;
 }
 
+static bool do_web(int argc, char *argv[])
+{
+    noise = false;
+    listenfd = open_listenfd(9999);
+    printf("listen on port 9999, fd is %d\n", listenfd);
+
+    return true;
+}
+
 static void console_init()
 {
     ADD_COMMAND(new, "                | Create new queue");
@@ -941,6 +954,7 @@ static void console_init()
     ADD_COMMAND(swap,
                 "                | Swap every two adjacent nodes in queue");
     ADD_COMMAND(shuffle, "                | Shuffle the list");
+    ADD_COMMAND(web, "                | Open web server");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",

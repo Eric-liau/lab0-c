@@ -5,6 +5,8 @@
 #include "linenoise.h"
 #define HISTORY_FILE ".cmd_history"
 
+
+
 /* Implementation of simple command-line interface */
 
 /* Simulation flag of console option */
